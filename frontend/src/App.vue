@@ -19,9 +19,14 @@
 </template>
 
 <script setup lang="ts">
+import { MODULES } from '@/data/modules'
 import { useSessionStore } from '@/stores/session'
 
 const store = useSessionStore()
 
-const navItems = [{ label: "运营概览", path: "/" }, { label: "换热站台账", path: "/heatstation" }, { label: "一次管网", path: "/primarynet" }, { label: "二次管网", path: "/secondarynet" }, { label: "站点巡检", path: "/stationpatrol" }, { label: "室温监测", path: "/roomtemp" }, { label: "水力平衡", path: "/hydraulic" }, { label: "热计量抄表", path: "/heatmeter" }, { label: "抢修处置", path: "/emergencyrepair" }, { label: "阀门井维护", path: "/valvewell" }, { label: "循环泵运维", path: "/circpump" }, { label: "补水定压", path: "/makeupwater" }, { label: "换热器清洗", path: "/hxclean" }, { label: "锅炉房运行", path: "/boilerroom" }, { label: "管网探漏", path: "/leakdetect" }, { label: "补偿器检查", path: "/compensator" }, { label: "停暖通知", path: "/heatnotice" }, { label: "热费结算", path: "/heatbilling" }, { label: "入户服务", path: "/householdservice" }]
+// 导航与本地存储取数同走模块清单这一份，新增模块不用再改两处。
+const navItems = [
+  { label: '运营概览', path: '/' },
+  ...MODULES.map((item) => ({ label: item.name, path: `/${item.key}` })),
+]
 </script>

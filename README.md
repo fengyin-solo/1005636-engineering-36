@@ -63,9 +63,23 @@ npm run build
 
 ## 约定
 
-- 每个模块的页面在 `frontend/src/views/<模块>/index.vue`，页面只负责渲染，读写统一走
-  `frontend/src/api/local-service.ts`。
+- 每个模块的页面在 `frontend/src/views/<模块>/index.vue`，页面只是
+  `frontend/src/views/ModulePage.vue` 的薄封装，读写统一走
+  `frontend/src/api/local-service.ts`；导航、路由、页面三处取数都来自模块清单。
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
+- 本地存储按**结构版本**管理（信封 `{ schemaVersion, data, quarantine, migrationLog }`，
+  沿用 `district-heating:entries` 键）：老版本数据首次读取时自动迁移，缺字段按清单原顺序
+  回填，迁移行进各模块待处理清单；无法识别的结构进隔离区并写明原因，不整片丢掉；
+  「复位本模块」只清当前业务模块。重复触发迁移只记一次。
+- 登记字段最长 50 字（`FIELD_MAX_LENGTH`），超长或类型非法直接退回重填，不截断入库。
 - 想回到初始数据：清掉浏览器里 `district-heating:entries` 这一项，或调用 `resetModule(模块)`。
+
+## 测试
+
+```bash
+cd frontend
+npm test            # 一次性跑迁移/隔离/复位/校验用例（vitest + jsdom）
+npm run test:watch  # 监听模式
+```
