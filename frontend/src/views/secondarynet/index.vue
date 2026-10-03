@@ -8,6 +8,7 @@
       <div class="page-actions">
         <button class="btn primary" type="button" @click="openCreate">登记二次管网管段</button>
         <button class="btn" type="button" @click="exportRows">导出二次管网清单</button>
+        <button class="btn ghost danger" type="button" @click="resetCurrent">复位本模块数据</button>
       </div>
     </header>
 
@@ -42,9 +43,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
+        <tr v-for="row in rows" :key="String(row.id)" :class="{ 'migrated-row': migrationRowIds.has(String(row.id)) }">
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
-          <td>{{ row.status }}</td>
+          <td>{{ row.status }}
+            <span v-if="migrationRowIds.has(String(row.id))" class="migrate-badge">待迁移复核</span>
+          </td>
           <td class="row-actions">
             <button
               v-for="action in actions"
@@ -67,31 +70,42 @@
       <span>共 {{ total }} 条二次管网记录</span>
       <span v-if="errorMessage" class="error-text">{{ errorMessage }}</span>
     </footer>
+    <ModulePendingPanel :module-key="meta.key" :issues="issues" />
+    <EntryCreateDialog v-model:open="dialogOpen" :module-key="meta.key" @saved="onSaved" />
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+import EntryCreateDialog from '@/components/EntryCreateDialog.vue'
+import ModulePendingPanel from '@/components/ModulePendingPanel.vue'
 import {
   downloadEntries,
   listEntries,
+  moduleIssues,
   moduleMeta,
   runAction as applyAction,
+  resetModule,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('secondarynet')
-const columns = ["管段编号", "所属片区", "公称管径", "敷设方式", "阀门井编号", "巡线周期", "投运日期", "管段状态"]
-const actions = ["完成巡线", "安排检修", "报废管段"]
-const statuses = ["待巡线", "运行正常", "待检修", "已废弃"]
-const stats = [{"label": "运行正常管段", "value": 0}, {"label": "待检修管段", "value": 0}, {"label": "待巡线管段", "value": 0}]
+const columns = meta.fields
+const actions = meta.actions
+const statuses = meta.statuses
+const stats = meta.metrics.map((label) => ({ label, value: 0 }))
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+const issues = ref(moduleIssues(meta.key))
+const migrationRowIds = computed(
+  () => new Set(issues.value.map((item) => String(item.rowId))),
+)
+const dialogOpen = ref(false)
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
@@ -109,7 +123,28 @@ function exportRows() {
 }
 
 function openCreate() {
-  errorMessage.value = '二次管网管段登记入口尚未接入审批流'
+  dialogOpen.value = true
+}
+
+function onSaved() {
+  dialogOpen.value = false
+  errorMessage.value = ''
+  reload()
+}
+
+// 复位只动当前业务模块：其他模块登记的数据、迁移记录与隔离内容都不受影响。
+function resetCurrent() {
+  if (
+    !window.confirm(
+      `确定只复位「${meta.name}」？该模块将恢复为示例数据，其他模块不受影响。`,
+    )
+  ) {
+    return
+  }
+  const payload = resetModule(meta.key)
+  rows.value = payload.items
+  total.value = payload.total
+  issues.value = moduleIssues(meta.key)
 }
 
 function runAction(action: string, row: EntryRow) {
@@ -128,8 +163,11 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    issues.value = moduleIssues(meta.key)
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '二次管网列表读取失败'
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : '二次管网列表读取失败'
   }
 }
 

@@ -66,6 +66,17 @@ npm run build
 - 每个模块的页面在 `frontend/src/views/<模块>/index.vue`，页面只负责渲染，读写统一走
   `frontend/src/api/local-service.ts`。
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
-  `frontend/src/data/seed.ts`。
+  `frontend/src/data/seed.ts`；本地存储取数与模块清单走同一份键，不再各维护一份。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
-- 想回到初始数据：清掉浏览器里 `district-heating:entries` 这一项，或调用 `resetModule(模块)`。
+- 本地存储按结构版本管理（`frontend/src/data/storage-schema.ts`）：
+  - key 沿用 `district-heating:entries`，内容为带 `version` 的信封；
+  - 读取时按版本迁移存量数据：缺失字段按模块清单原顺序回填，缺 `abnormal/pending/status`
+    等固定列时回填默认值并列入待处理，长度非法的字段保留原值、退回人工重填；
+  - 不认识的模块、非数组模块、非对象行、无法解析或版本更高的存储一律进隔离区并附原因，
+    不会整片覆盖或与现有数据拼接；
+  - 迁移结果落到各模块的「迁移待处理清单」（运营概览与模块页均可看到），重复提交迁移
+    只回读既有结果，迁移只记一遍日志；
+  - 复位只清当前业务模块，其他模块登记数据、迁移日志与隔离区不受影响。
+- 想回到初始数据：模块页右上角「复位本模块数据」，或清掉浏览器里
+  `district-heating:entries` 这一项。存储原文无法解析时会先备份到
+  `district-heating:entries:raw-backup`。

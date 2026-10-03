@@ -35,3 +35,26 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .error-text { color: #b42318; }
 .status-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 10px; font-size: 12px; color: var(--muted); }
 .legend-item { background: #eef2f7; border-radius: 999px; padding: 2px 10px; }
+.btn.danger { color: #b42318; border-color: #f0b8b0; }
+.migrated-row { background: #fff8e6; }
+.migrate-badge { display: inline-block; margin-left: 6px; font-size: 11px; color: #92580a; background: #fde9b8; border-radius: 999px; padding: 1px 8px; }
+.pending-panel { margin-top: 14px; background: #fff; border: 1px solid #e8d49a; border-left: 4px solid #d99706; border-radius: 8px; padding: 10px 14px; }
+.pending-head { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.pending-head span { color: var(--muted); font-size: 12px; font-weight: normal; }
+.pending-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pending-item { font-size: 12px; display: flex; gap: 8px; align-items: baseline; }
+.pending-row { font-weight: 600; color: #92580a; }
+.pending-field { background: #fde9b8; border-radius: 4px; padding: 0 6px; color: #7a4d08; }
+.pending-msg { color: #475569; }
+.migration-panel { margin-top: 18px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.migration-panel h3 { margin: 0 0 6px; font-size: 15px; }
+.modal-mask { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal-card { width: 480px; max-height: 86vh; overflow: auto; background: #fff; border-radius: 10px; padding: 16px 18px; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; }
+.modal-head h3 { margin: 0; font-size: 16px; }
+.modal-body { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.form-item span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.form-item input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+.form-item input.invalid { border-color: #d92d20; background: #fff5f4; }
+.modal-foot { display: flex; align-items: center; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.form-hint { color: var(--muted); font-size: 12px; margin-right: auto; }
